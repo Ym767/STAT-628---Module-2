@@ -1,0 +1,162 @@
+---
+title: "All code for cleaning, running analysis, and producing figures"
+output: html_document
+date: "2023-10-15"
+---
+Below is the code for reading in the data and doing data cleaning. 
+```{r}
+#important necessary libraries
+library(dplyr)
+library(ggplot2)
+library(rpart)
+library(rpart.plot)
+library(car)
+
+#read in data
+data <- read.csv("BodyFat.csv")
+
+# Harmonization of variable units
+data$HEIGHT=data$HEIGHT*2.54
+data$WEIGHT=data$WEIGHT*0.453592
+# Look at the overall picture of the data and observe if there are any unreasonable values
+summary(data)
+# Apply formulas to calculate bodyfat to help check for unreasonable values (replace or remove)
+data<-mutate(data, bodyfat_check=495/DENSITY-450)
+# Compare the unreasonable value of BODYFAT (bodyfat<3) with bodyfat_check
+for(i in 1:nrow(data)){
+  if(data$BODYFAT[i] < 3.0){
+    print(data[i,])
+  }
+}
+# Since bodyfat = 495/DENSITY-450 and bodyfat should be at least greater than 3, it can be concluded that density is at least less than 1.093.
+# Retain only reasonable data
+data <- data[data$WEIGHT < 150 & data$HEIGHT > 150 & data$BODYFAT < 40 & data$DENSITY < 1.093 & data$BODYFAT > 3, ]
+# Check if all variables are within reasonable limits
+summary(data)
+
+# Apply formulas to calculate adiposity to help check for unreasonable values (replace or remove)
+data <- mutate(data, adiposity_check = round(WEIGHT / (HEIGHT^2) * 10000, 1))
+# Change all miscalculated adiposity values to the correct ones
+for(i in 1:nrow(data)){
+  if(data$ADIPOSITY[i]< data$adiposity_check[i]-0.5 || data$ADIPOSITY[i] > data$adiposity_check[i]+0.5){
+    print(data[i,])
+    data$ADIPOSITY[i]<-data$adiposity_check[i]
+  }
+}
+# Deleting variables for help checking
+data <- select(data, -adiposity_check, -bodyfat_check)
+summary(data)
+
+# According to the link: https://usafacts.org/data/topics/people-society/population-and-demographics/our-changing-population/
+age_breaks <- c(20, 34, 49, 64, Inf)
+age_labels <- c("20-34", "35-49", "50-64", "older than 65")
+age_groups <- cut(data$AGE, breaks = age_breaks, labels = age_labels, right = TRUE, include.lowest = TRUE)
+age_proportions <- prop.table(table(age_groups)) * 100
+print(age_proportions)
+# Calculate the age distribution of the U.S. population aged 20 and older (2021)
+usa_age_dist <- c(26.86, 25.27, 25.53, 22.34)
+data <- mutate(data, age_weight_new = usa_age_dist[cut(data$AGE, breaks = age_breaks, labels = age_labels, right = TRUE, include.lowest = TRUE)])
+data
+```
+
+Below is the code for using a deicison tree to help find which predictors to use.
+```{r}
+# QQ_plot
+par(mfrow = c(4, 4), mar = c(4, 4, 2, 1))
+for (var in names(data)) {
+    if (var != "IDNO" && var != "age_weight_new") {
+        qqnorm(data[[var]], main = paste("QQ Plot for", var))
+        qqline(data[[var]])
+    }
+}
+# Correlation matrix
+cor_matrix <- cor(data, use = "complete.obs", method = "pearson")
+print(cor_matrix)
+
+# Exclude the IDNO and DENSITY columns (IDNO is an identifier, while DENSITY is considered to be directly related to BODYFAT)
+data_subset <- data[, !(names(data) %in% c("IDNO", "DENSITY"))]
+# Use decision tree: See which variables are most critical to predicting BODYFAT
+fit <- rpart(BODYFAT ~ ., data = data_subset, method = "anova")
+print(fit)
+rpart.plot(fit, yesno = 2, type = 3, extra = 1)
+# Building the final model
+model <- lm(BODYFAT ~ ABDOMEN + HEIGHT, data=data)
+summary(model)
+
+#training and testing
+set.seed(123)
+data_subset <- data[, !(names(data) %in% c("IDNO", "DENSITY"))]
+index <- sample(1:nrow(data_subset), 0.8*nrow(data_subset))
+train_data <- data_subset[index, ]
+test_data <- data_subset[-index, ]
+train <- rpart(BODYFAT ~ ., data=train_data, method = "anova")
+print(train)
+model_1 <- lm(BODYFAT ~ ABDOMEN + HEIGHT, data=train_data)
+summary(model_1)
+model_2 <- lm(BODYFAT ~ ABDOMEN + WRIST, data=train_data)
+summary(model_2)
+model_3 <- lm(BODYFAT ~ ABDOMEN + NECK, data=train_data)
+summary(model_3)
+pred_1 <- predict(model_1, newdata = test_data)
+mse_1 <- mean((test_data$BODYFAT - pred_1)^2)
+print(paste("MSE for model_1:", round(mse_1, 3)))
+pred_2 <- predict(model_2, newdata = test_data)
+mse_2 <- mean((test_data$BODYFAT - pred_2)^2)
+print(paste("MSE for model_2:", round(mse_2, 3)))
+pred_3 <- predict(model_3, newdata = test_data)
+mse_3 <- mean((test_data$BODYFAT - pred_3)^2)
+print(paste("MSE for model_3:", round(mse_3, 3)))
+if(mse_1 < mse_2){
+  cat("Model_1 has higher prediction accuracy with MSE:", round(mse_1, 3), "\n")
+} else if(mse_1 > mse_2) {
+  cat("Model_2 has higher prediction accuracy with MSE:", round(mse_2, 3), "\n")
+} else {
+  cat("Both models have the same prediction accuracy with MSE:", round(mse_1, 3), "\n")
+}
+
+```
+Next is the code for the final models where m3 is the final model chosen. Also below is the line to extract the cleaned data to a csv.
+```{r}
+#output cleaned data
+write.csv(data, "cleaned_data.csv")
+
+#test different models
+m1 <-lm(BODYFAT ~ ABDOMEN + HEIGHT, data=data)
+summary(m1)
+m2 <- lm(BODYFAT ~ ABDOMEN + NECK, data=data)
+summary(m2)
+m3 <- lm(BODYFAT ~ ABDOMEN + WRIST, data=data)
+summary(m3)
+predict(m3, data.frame(ABDOMEN=102,WRIST=17))
+cor(data)
+m0 <- lm(BODYFAT ~ ABDOMEN, data=data)
+summary(m0)
+
+#prediction using final model chosen
+predict(m3,data.frame(ABDOMEN=102,WRIST=17), interval='confidence')
+confint(m3, level=0.95)
+```
+```{r}
+#model diagnostics 
+vif(m3)
+qqnorm(residuals(m3))
+qqline(residuals(m3))
+plot(m3,1)
+
+ggplot(data, aes(x = WRIST, y = BODYFAT)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  labs(title = "Scatterplot: BODYFAT vs. WRIST",
+       x = "WRIST (cm)",
+       y = "BODYFAT (%)")
+
+# Scatterplot: ABDOMEN vs. BODYFAT
+ggplot(data, aes(x = ABDOMEN, y = BODYFAT)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  labs(title = "Scatterplot: ABDOMEN vs. BODYFAT",
+       x = "ABDOMEN (cm)",
+       y = "BODYFAT (%)")
+
+```
+
