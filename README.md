@@ -17,12 +17,12 @@ STAT628-Module2-Group6/
 │   └── cleaned_data.csv  # Processed and cleaned data
 │
 ├── image/  # Various images and plots used in the analysis and presentation
-│   ├── abdomenscatterplot/
-│   ├── decisiontree/
-│   ├── normal qq plot/
-│   ├── predictors_qqplot/
-│   ├── residualsvsfitted/
-│   └── wristscatterplot/
+│   ├── abdomenscatterplot/ #scatterplot of abdomen vs body fat
+│   ├── decisiontree/ #decision tree used to find predictors for model
+│   ├── normal qq plot/ #to test for normality condition of final model
+│   ├── predictors_qqplot/ #Q-Q plot of various predictors
+│   ├── residualsvsfitted/ #residual vs fitted plot of final model
+│   └── wristscatterplot/ #scattterplot of wrist vs body fat
 │
 └── README.md  # This file
 ```
