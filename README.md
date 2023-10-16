@@ -41,6 +41,8 @@ STAT628-Module2-Group6/
 
 - `README.md`: Provides an overview and explains the repository structure (this file).
 
+- `STAT 628 Group6.pptx`: Presentation slides for the model.
+
 ## Body Fat Prediction App
 
 You can access the Body Fat Prediction App developed based on our model directly via the following link:
