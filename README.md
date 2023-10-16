@@ -15,6 +15,10 @@ STAT628-Module2-Group6/
 ├── data/ 
 │   ├── BodyFat.csv  # Original dataset
 │   └── cleaned_data.csv  # Processed and cleaned data
+|
+├── presentation documents/ 
+│   ├── STAT628 Group6.pptx  # presentation file for the project.
+│   └── Executive Summary.pdf  # executive summary for the project.
 │
 ├── image/  # Various images and plots used in the analysis and presentation
 │   ├── abdomenscatterplot/ #scatterplot of abdomen vs body fat
@@ -31,19 +35,20 @@ STAT628-Module2-Group6/
 
 - `code/`: Contains the main code files for the project.
     - `app.R`: The R script to run the Shiny app for body fat prediction.
-    - `Group6_maincode.Rmd`: An R Markdown file containing the main analysis and methodology.
+    - `Group6_maincode.Rmd`: A R Markdown file containing the main analysis and methodology.
 
 - `data/`: Stores the datasets used in this project.
     - `BodyFat.csv`: The original dataset used for building the prediction model.
     - `cleaned_data.csv`: The cleaned data obtained after preprocessing.
+    
+- `presentation documents/`: Stores the document files used to explain this project.
+    - `STAT628 Group6.pptx`: The presentation file for the project.
+    - `Executive Summary.pdf` : A 2-page executive summary of data cleaning, analysis, and discussion of model.
 
 - `image/`: Contains images and plots that might be used in the analysis, presentation, or within the Shiny app. Each subfolder or image corresponds to different aspects or sections of the analysis.
 
 - `README.md`: Provides an overview and explains the repository structure (this file).
 
-- `STAT 628 Group6.pptx`: Presentation slides for the model.
-
-- `Executive Summary.pdf`: 2-page executive summary of data cleaning, analysis, and discussion of model.
 ## Body Fat Prediction App
 
 You can access the Body Fat Prediction App developed based on our model directly via the following link:
