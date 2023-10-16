@@ -15,7 +15,7 @@ STAT628-Module2-Group6/
 ├── data/ 
 │   ├── BodyFat.csv  # Original dataset
 │   └── cleaned_data.csv  # Processed and cleaned data
-|
+│
 ├── presentation documents/ 
 │   ├── STAT628 Group6.pptx  # presentation file for the project.
 │   └── Executive Summary.pdf  # executive summary for the project.
