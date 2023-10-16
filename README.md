@@ -43,6 +43,7 @@ STAT628-Module2-Group6/
 
 - `STAT 628 Group6.pptx`: Presentation slides for the model.
 
+- `Executive Summary.pdf`: 2-page executive summary of data cleaning, analysis, and discussion of model.
 ## Body Fat Prediction App
 
 You can access the Body Fat Prediction App developed based on our model directly via the following link:
